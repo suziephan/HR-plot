@@ -86,7 +86,7 @@ temp2<-dt%>%
 dt2_new <- rbind(temp1, temp2)
 dt2_new$employee <- factor(dt2_new$employee, levels = unique(dt2_new[order(dt2_new$work_att),"employee"]))
 
-write_csv(dt2_new, "/Users/NT/Documents/Project/Samproj/dt2_new.csv")
+write_csv(dt2_new, "./dt2_new.csv")
 ############## PLOT BY DATE###################3
 #dt2_new[dt2_new$actual_shift=="","actual_shift"] <- NA
 
@@ -124,7 +124,7 @@ dt2_new%>%
   theme(panel.background = element_rect(fill = "white"),
         panel.grid.major.x = element_line(color = "grey", size = 0.5, linetype ="dotted"),
         panel.border = element_rect(fill = "NA",color = "black"), axis.text.x = element_text(angle = 45))
-ggsave("/Users/NT/Documents/Project/Samproj/plotbydate2.pdf")
+ggsave("plotbydate2.pdf")
 
 #plot by employee by month
 x<- args[2]
@@ -153,7 +153,7 @@ dt2_new %>%
         panel.grid.major.x = element_line(color = "grey", size = 0.5, linetype ="dotted"))
 
 
-ggsave("/Users/NT/Documents/Project/Samproj/plotbyemployee3.pdf")
+ggsave("plotbyemployee3.pdf")
 #count plot by employee per every month 
 dt2_new %>%
   mutate(working_month = month(datework)) %>%
@@ -170,7 +170,7 @@ dt2_new %>%
   facet_wrap(~ employee)+
   labs(title = paste0("Working attitude of ", args[2]))
   
-ggsave("/Users/NT/Documents/Project/Samproj/countplot4.pdf")
+ggsave("countplot4.pdf")
                  
 #late plot by diff time in one month with heat map
 dt%>%
@@ -183,7 +183,7 @@ dt%>%
   scale_x_date(breaks = "1 day", date_labels = "%a-%e")+
   theme(axis.text.x = element_text(angle = 45),
         panel.background = element_rect(fill = "white"))
-ggsave("/Users/NT/Documents/Project/Samproj/lateplot5.pdf")
+ggsave("lateplot5.pdf")
 
 #early leaving plot by diff time in one month with heat map
 #scale_fill_gradient(low="white", high="blue") 
@@ -197,7 +197,7 @@ dt%>%
   scale_x_date(breaks = "1 day", date_labels = "%a-%e")+
   theme(axis.text.x = element_text(angle = 45),
         panel.background = element_rect(fill = "white"))
-ggsave("/Users/NT/Documents/Project/Samproj/heatmapo6.pdf") 
+ggsave("heatmapo6.pdf") 
 
 #compare number of time lates between employee in 1 month
 dt%>%
@@ -211,7 +211,7 @@ dt%>%
   theme(axis.text.x = element_text(angle = 45),
         panel.background = element_rect(fill = "white"))+
   geom_text(aes(x = employee, y = n, label =n), vjust = -0.2)
-ggsave("/Users/NT/Documents/Project/Samproj/heatmapin7.pdf")
+ggsave("heatmapin7.pdf")
 
 # make color with column plot and e_pictorial for late
 sad_face <- "https://1.bp.blogspot.com/-klwxpFekdEQ/XOubIhkalyI/AAAAAAAAHlE/25psl9x4oNkbJoLc2CKTXgV2pEj6tAvigCLcBGAs/s1600/pencil.png"
@@ -255,7 +255,7 @@ aligned_plots1 <- align_plots(myplot, p4, align="hv", axis="tblr", greedy = TRUE
 
 ggdraw(aligned_plots1[[1]])+draw_plot(aligned_plots1[[2]])
 
-ggsave("/Users/NT/Documents/Project/Samproj/pieclock8.pdf")
+ggsave("pieclock8.pdf")
 
 p4 <-plot_grid(p3,p3,p3, align = "h", scale =1 , ncol = 3)
 
