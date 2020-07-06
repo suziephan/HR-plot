@@ -1,7 +1,7 @@
 #Rscript --vanilla  Samprojv3.R 2020-04-01 "Heckman, Emily","el-Mona, Shaheera" 4
 
 args = commandArgs(trailingOnly = TRUE)
-cat(args[2], sep ='\n')
+cat(args[1], sep ='\n')
 #install.packages()
 
 library(dplyr)
@@ -20,25 +20,23 @@ library(echarts4r.assets)
 library(grid)
 library(cowplot)
 library(magick)
+library(naniar)
 
 # Connect to the default postgres database
-con <- dbConnect(RPostgres::Postgres(),dbname = 'checkin_co', 
-                 host = 'localhost', # i.e. 'ec2-54-83-201-96.compute-1.amazonaws.com'
-                 port = 5432, # or any other port specified by your DBA
+con <- dbConnect(RPostgres::Postgres(),dbname = args[6], 
+                 host = 'localhost',
+                 port = 5432, 
                  user = 'postgres',
                  password = '1')
 res <- dbSendQuery(con,"SELECT * FROM timeinfo")
 dt <- data.frame(dbFetch(res))
-con <- dbConnect(RPostgres::Postgres(),dbname = 'checkin_co', 
-                 host = 'localhost', # i.e. 'ec2-54-83-201-96.compute-1.amazonaws.com'
-                 port = 5432, # or any other port specified by your DBA
+con <- dbConnect(RPostgres::Postgres(),dbname = args[6], 
+                 host = 'localhost', 
+                 port = 5432, 
                  user = 'postgres',
                  password = '1')
 work <- dbSendQuery(con,"SELECT * FROM shiftinfo")
 dt2 <- data.frame(dbFetch(work))
-
-dt[duplicated(dt),]
-
 
 spread_error <- function (dt) {
    x<-dt%>%filter(dt$type =="login")
@@ -53,10 +51,25 @@ dt<-merge(x = dt1, y = dt2, by =c("userid","datework","employee"), all.x= TRUE)
 
 dt$workday <-substr(weekdays(dt$datework),1,3)
 
+
 dt$"worktime" <- seconds_to_period(difftime(dt$logout, dt$login,units = "secs"))
 dt$worktime <- hms::hms(dt$worktime)
 worktime_cv <- function (z ) round(hour(z)+minute(z)/60 + second(z)/3600,1)
 dt$"worktime2" <- worktime_cv(dt$worktime)
+
+d_time_in <- c("09:00:00")
+d_time_out <- c("17:00:00")
+
+dt <- dt%>%
+  mutate (expected_login = ifelse(is.na(expected_login),ifelse(is.na(args[4]),d_time_in, args[4]),as.character(expected_login))) %>%
+  mutate (expected_logout = ifelse(is.na(expected_logout),ifelse(is.na(args[5]),d_time_out, args[5]),as.character(expected_logout))) %>% 
+  mutate (expected_login = as_hms(expected_login), expected_logout = as_hms(expected_logout))%>%
+  mutate(work_att1 = ifelse(expected_login-login>0,"ontime","late"),
+         work_att2 = ifelse(expected_logout - logout <0,"ontime","left early"))%>%
+  mutate(work_att = ifelse(work_att1=="ontime" & work_att2 == "ontime", "good", 
+                           ifelse(work_att1=="late" & work_att2=="ontime","late", 
+                                  ifelse(work_att1=="ontime" & work_att2=="left early",
+                                         "left early","came late & left early"))))
 
 
 #plot by date
@@ -64,21 +77,25 @@ dt$"worktime2" <- worktime_cv(dt$worktime)
 temp1 <- dt %>% 
   gather(key = "type", value = "actual_shift", starts_with("log"))%>%
   select(-c("expected_login","expected_logout"))
+print("temp1")
+print(head(temp1,5))
 temp2 <-dt%>%
   gather(key = "type", value = "assigned_shift", contains("expected"))%>%
   select(-c("login","logout"))%>%
   mutate(type = str_replace_all(type, "expected_",""))
-
+print("temp2")
+print(head(temp2,5))
 dt2_new <-merge(x =temp1, y = temp2, by = c("userid","datework","employee","type"), all.x = TRUE)
-dt2_new <- dt2_new%>%
-  select(-c("workday.y","worktime.y","worktime2.y"))
-            #"work_att1.y",#"work_att2.y",#"work_att.y"
 
-colnames(dt2_new) <- c("userid","datework","employee", "type",         
-                       "workday","worktime", "worktime2", "actual_shift", "assigned_shift")
-                       #"work_att1", "work_att2","work_att"
-
-#write_csv(dt2_new, "/Users/NT/Documents/Project/Samproj/dt2_new.csv")
+print("dt2_new 1st")
+print(head(dt2_new,5))
+dt2_new <-dt2_new %>%
+  select(-matches("\\.y$")) %>%
+  rename_at(vars(ends_with(".x")),list(~str_replace(.,".x","")))
+print("dt2_new after rename")
+print(head(dt2_new,5))
+#write_csv(dt2_new, "/Users/NT/Documents/Project/Samproj/dt2_newv2.csv")
+#dt2v2 <- read.csv("/Users/NT/Documents/Project/Samproj/dt2_newv2.csv")
 ############## PLOT BY DATE###################3
 #dt2_new[dt2_new$actual_shift=="","actual_shift"] <- NA
 
@@ -89,31 +106,27 @@ attitude <-function (x, y,z) {
   return (att)
 }
 
-#print(class(chron (times = args[4])))
-d_time_in <- c("09:00:00")
-d_time_out <- c("17:00:00")
-
-
 dt2_new%>%
   filter(datework == args[1])%>%
   mutate (assigned_shift = ifelse(is.na(assigned_shift),ifelse(type =="login", 
                                   ifelse(is.na(args[4]),d_time_in, args[4]),
                                   ifelse(is.na(args[5]),d_time_out, args[5])),assigned_shift))%>%
   mutate(assigned_shift = as_hms(assigned_shift))%>%
-  mutate(work_att1 = attitude(assigned_shift,actual_shift,type)) %>%
   ggplot+
   geom_point(aes(x = employee, y = assigned_shift, color = type, size =2))+
   geom_line(aes(x = employee, y = actual_shift, group = employee))+
   geom_point(aes(x = employee, y = actual_shift ),size =1)+
   scale_color_brewer(palette = "Dark2")+
+  facet_wrap(~work_att)+
   coord_flip()+
-  scale_y_time(breaks = seq(6*3600,22*3600,3600), labels = paste0(c(6:22)))+
+  scale_y_time(breaks = seq(6*3600,22*3600,3600*2), labels = paste0(seq(6,22,2)),
+               minor_breaks = seq(6*3600,22*3600,3600))+
   theme(panel.background = element_rect(fill = "white"),
         panel.grid.major.x = element_line(color = "grey", size = 0.5, linetype ="dotted"),
         panel.border = element_rect(fill = "NA",color = "black"), axis.text.x = element_text(angle = 0))
 
 ggsave("/Users/NT/Documents/Project/Samproj/plotbydate2.pdf")
-
+ggsave("/Users/NT/Documents/Project/Samproj/plotbydate2.png")
 #plot by employee by month
 x<- args[2]
 vector_convert <- function (x) {
@@ -125,15 +138,15 @@ vector_convert <- function (x) {
 }
 
 z <- vector_convert(x) 
-z
+
+
 dt2_new %>%
   filter(employee %in% z)%>%
   filter(month(datework)  == args[3])%>%
-  mutate (assigned_shift = ifelse(type =="login", 
-                                  ifelse(is.na(args[4]),d_time_in, args[4]),
-                                  ifelse(is.na(args[5]),d_time_out, args[5])))%>%
+  mutate (assigned_shift = ifelse(is.na(assigned_shift),ifelse(type =="login", 
+                                                               ifelse(is.na(args[4]),d_time_in, args[4]),
+                                                               ifelse(is.na(args[5]),d_time_out, args[5])),assigned_shift))%>%
   mutate(assigned_shift = as_hms(assigned_shift))%>%
-  mutate(work_att = attitude(assigned_shift,actual_shift,type)) %>%
   ggplot+
   geom_line(aes(x = datework, y = assigned_shift, group = datework),color = "#CDCDCD", size = 4)+
   geom_line(aes(x = datework, y = actual_shift, group = datework, color = work_att), size =1)+
@@ -150,9 +163,6 @@ ggsave("/Users/NT/Documents/Project/Samproj/plotbyemployee3.pdf")
 
 #late plot by diff time in one month with heat map
 dt%>%
-  mutate (expected_login = ifelse(is.na(expected_login),ifelse(is.na(args[4]),d_time_in, args[4]),as.character(expected_login))) %>%
-  mutate (expected_logout = ifelse(is.na(expected_logout),ifelse(is.na(args[5]),d_time_out, args[5]), as.character(expected_logout)))%>%
-  mutate (expected_login = as_hms(expected_login), expected_logout = as_hms(expected_logout))%>%
   mutate(time_in = as.numeric(difftime(expected_login, login), units = "mins"))%>%
   mutate(time_out = as.numeric(difftime(expected_logout, logout), units = "mins"))%>%
   filter(month(datework)  == args[3])%>%
@@ -170,21 +180,25 @@ dt%>%
   mutate(time_in = as.numeric(difftime(expected_login, login), units = "mins"))%>%
   mutate(time_out = as.numeric(difftime(expected_logout, logout), units = "mins"))%>%
   filter(month(datework)  == args[3])%>%
-  mutate (assigned_shift = ifelse(type =="login", 
-                                  ifelse(is.na(args[4]),d_time_in, args[4]),
-                                  ifelse(is.na(args[5]),d_time_out, args[5])))%>%
-  mutate(assigned_shift = as_hms(assigned_shift))%>%
-  mutate(work_att = attitude(assigned_shift,actual_shift,type)) %>%
   ggplot()+
   geom_tile(aes(x = datework, y = employee, fill = time_out))+
   scale_fill_distiller(palette = "RdPu") + #RdPu
-  scale_x_date(breaks = "1 day", date_labels = "%a-%e")+
+  scale_x_date(breaks = "3 days", date_labels = "%a-%e")+
   theme(
         panel.background = element_rect(fill = "white"))
-ggsave("/Users/NT/Documents/Project/Samproj/heatmapo6.pdf") 
+ggsave("/Users/NT/Documents/Project/Samproj/heatmap6.pdf") 
 
+dt%>%
+  filter(month(datework)  == args[3])%>%
+  ggplot()+
+  geom_tile(aes(x = datework, y = employee, fill = worktime2))+
+  scale_fill_distiller(palette = "Oranges") + #RdPu
+  scale_x_date(breaks = "7 days", date_labels = "%a-%e")+
+  theme(
+    panel.background = element_rect(fill = "white"))
 
-#write_csv(df,"/Users/NT/Documents/Project/Samproj/samproj.csv")
+ggsave("/Users/NT/Documents/Project/Samproj/heatmap7.pdf") 
+
 
 
 
