@@ -125,8 +125,8 @@ dt2_new%>%
         panel.grid.major.x = element_line(color = "grey", size = 0.5, linetype ="dotted"),
         panel.border = element_rect(fill = "NA",color = "black"), axis.text.x = element_text(angle = 0))
 
-ggsave("/Users/NT/Documents/Project/Samproj/plotbydate2.pdf")
-ggsave("/Users/NT/Documents/Project/Samproj/plotbydate2.png")
+ggsave("Samproj/plotbydate2.pdf")
+ggsave("plotbydate2.png")
 #plot by employee by month
 x<- args[2]
 vector_convert <- function (x) {
@@ -158,7 +158,7 @@ dt2_new %>%
         panel.grid.major.y = element_line(color = "grey", size = 0.5, linetype ="dotted"),
         panel.grid.major.x = element_line(color = "grey", size = 0.5, linetype ="dotted"))
 
-ggsave("/Users/NT/Documents/Project/Samproj/plotbyemployee3.pdf")
+ggsave("plotbyemployee3.pdf")
 
 
 #late plot by diff time in one month with heat map
@@ -172,7 +172,7 @@ dt%>%
   scale_x_date(breaks = "1 week", date_labels = "%a-%e")+
   theme(axis.text.x = element_text(angle = 0),
         panel.background = element_rect(fill = "white"))
-ggsave("/Users/NT/Documents/Project/Samproj/lateplot5.pdf")
+ggsave("lateplot5.pdf")
 
 #early leaving plot by diff time in one month with heat map
 #scale_fill_gradient(low="white", high="blue") 
@@ -186,7 +186,7 @@ dt%>%
   scale_x_date(breaks = "3 days", date_labels = "%a-%e")+
   theme(
         panel.background = element_rect(fill = "white"))
-ggsave("/Users/NT/Documents/Project/Samproj/heatmap6.pdf") 
+ggsave("heatmap6.pdf") 
 
 dt%>%
   filter(month(datework)  == args[3])%>%
@@ -197,7 +197,7 @@ dt%>%
   theme(
     panel.background = element_rect(fill = "white"))
 
-ggsave("/Users/NT/Documents/Project/Samproj/heatmap7.pdf") 
+ggsave("heatmap7.pdf") 
 
 
 
