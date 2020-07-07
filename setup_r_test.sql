@@ -2,11 +2,14 @@ create database checkin_co;
 
 \connect checkin_co;
 
+drop table timeinfo;
+drop table shiftinfo;
+
 create table timeinfo(userid int NOT NULL, 
                    employee VARCHAR(50), 
                    datework date,
-                   login time without time zone,
-                   logout time without time zone
+                   type varchar(50),
+                   time1 without time zone
 		   );
 
 create table shiftinfo(userid int NOT NULL, 
@@ -18,4 +21,4 @@ create table shiftinfo(userid int NOT NULL,
 
 
 \copy shiftinfo from 'shiftinfo.csv' with DELIMITER ',' CSV HEADER
-\copy timeinfo  from 'samproj.csv'  with DELIMITER ',' CSV HEADER
+\copy timeinfo  from 'samprojv2.csv'  with DELIMITER ',' CSV HEADER
