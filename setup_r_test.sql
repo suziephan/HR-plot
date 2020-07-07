@@ -9,7 +9,7 @@ create table timeinfo(userid int NOT NULL,
                    employee VARCHAR(50), 
                    datework date,
                    type varchar(50),
-                   time1 without time zone
+                   time1 time without time zone
 		   );
 
 create table shiftinfo(userid int NOT NULL, 
