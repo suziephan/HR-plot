@@ -1,12 +1,13 @@
-﻿1 ,"Heckman, Emily",2020-02-03,Mon,11:00:00,19:00:00
-1 ,"Heckman, Emily",2020-02-04,Tue,8:00:00,16:00:00
-1 ,"Heckman, Emily",2020-02-05,Wed,8:00:00,16:00:00
-1 ,"Heckman, Emily",2020-02-06,Thu,10:00:00,18:00:00
-1 ,"Heckman, Emily",2020-02-07,Fri,10:00:00,18:00:00
-1 ,"Heckman, Emily",2020-02-10,Mon,8:00:00,16:00:00
-1 ,"Heckman, Emily",2020-02-11,Tue,11:00:00,19:00:00
-1 ,"Heckman, Emily",2020-02-12,Wed,10:00:00,18:00:00
-1 ,"Heckman, Emily",2020-02-13,Thu,9:00:00,17:00:00
+﻿userid,employee,datework,weekday,expected_login,expected_logout
+1,"Heckman, Emily",2020-02-03,Mon,11:00:00,19:00:00
+1,"Heckman, Emily",2020-02-04,Tue,8:00:00,16:00:00
+1,"Heckman, Emily",2020-02-05,Wed,8:00:00,16:00:00
+1,"Heckman, Emily",2020-02-06,Thu,10:00:00,18:00:00
+1,"Heckman, Emily",2020-02-07,Fri,10:00:00,18:00:00
+1,"Heckman, Emily",2020-02-10,Mon,8:00:00,16:00:00
+1,"Heckman, Emily",2020-02-11,Tue,11:00:00,19:00:00
+1,"Heckman, Emily",2020-02-12,Wed,10:00:00,18:00:00
+1,"Heckman, Emily",2020-02-13,Thu,9:00:00,17:00:00
 1,"Heckman, Emily",2020-02-14,Fri,8:00:00,16:00:00
 1,"Heckman, Emily",2020-02-17,Mon,10:00:00,18:00:00
 1,"Heckman, Emily",2020-02-18,Tue,9:00:00,17:00:00
