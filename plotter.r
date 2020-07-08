@@ -60,7 +60,8 @@ dt$"worktime2" <- worktime_cv(dt$worktime)
 
 d_time_in <- c("09:00:00")
 d_time_out <- c("17:00:00")
-
+print("data dt before mutate")
+print(head(dt,6))
 dt <- dt%>%
   mutate (expected_login = ifelse(is.na(expected_login),ifelse(is.na(args[4]),d_time_in, args[4]),as.character(expected_login))) %>%
   mutate (expected_logout = ifelse(is.na(expected_logout),ifelse(is.na(args[5]),d_time_out, args[5]),as.character(expected_logout))) %>% 
@@ -71,7 +72,9 @@ dt <- dt%>%
                            ifelse(work_att1=="late" & work_att2=="ontime","late", 
                                   ifelse(work_att1=="ontime" & work_att2=="left early",
                                          "left early","came late & left early"))))
-
+print("dt after mutate everything")
+print("\n")
+print(head(dt,6))
 
 #plot by date
 
@@ -110,8 +113,8 @@ attitude <-function (x, y,z) {
 dt2_new%>%
   filter(datework == args[1])%>%
   mutate (assigned_shift = ifelse(is.na(assigned_shift),ifelse(type =="login", 
-                                                               ifelse(is.na(args[4]),d_time_in, args[4]),
-                                                               ifelse(is.na(args[5]),d_time_out, args[5])),assigned_shift))%>%
+                                                               ifelse(is.na(args[4]),d_time_in, as.character(args[4])),
+                                                               ifelse(is.na(args[5]),d_time_out, as.character(args[5]))),assigned_shift))%>%
   mutate(assigned_shift = as_hms(assigned_shift))%>%
   ggplot+
   geom_point(aes(x = employee, y = assigned_shift, color = type, size =2))+
@@ -124,7 +127,8 @@ dt2_new%>%
                minor_breaks = seq(6*3600,22*3600,3600))+
   theme(panel.background = element_rect(fill = "white"),
         panel.grid.major.x = element_line(color = "grey", size = 0.5, linetype ="dotted"),
-        panel.border = element_rect(fill = "NA",color = "black"), axis.text.x = element_text(angle = 0))
+        panel.border = element_rect(fill = "NA",color = "black"), axis.text.x = element_text(angle = 0))+
+  ylab("hour")
 
 ggsave(filename = paste0(as.character(args[7]),"_1",".png")) 
 #ggsave("/Users/NT/Documents/Project/Samproj/plotbydate2.pdf")
@@ -146,8 +150,8 @@ dt2_new %>%
   filter(employee %in% z)%>%
   filter(month(datework)  == args[3])%>%
   mutate (assigned_shift = ifelse(is.na(assigned_shift),ifelse(type =="login", 
-                                                               ifelse(is.na(args[4]),d_time_in, args[4]),
-                                                               ifelse(is.na(args[5]),d_time_out, args[5])),assigned_shift))%>%
+                                                               ifelse(is.na(args[4]),d_time_in, as.character(args[4])),
+                                                               ifelse(is.na(args[5]),d_time_out, as.character(args[5]))),as.character(assigned_shift)))%>%
   mutate(assigned_shift = as_hms(assigned_shift))%>%
   ggplot+
   geom_line(aes(x = datework, y = assigned_shift, group = datework),color = "#CDCDCD", size = 4)+
@@ -158,7 +162,8 @@ dt2_new %>%
   theme(axis.text.x = element_text(angle = 0))+
   theme(panel.background = element_rect(fill = "white"),
         panel.grid.major.y = element_line(color = "grey", size = 0.5, linetype ="dotted"),
-        panel.grid.major.x = element_line(color = "grey", size = 0.5, linetype ="dotted"))
+        panel.grid.major.x = element_line(color = "grey", size = 0.5, linetype ="dotted"))+
+  scale_color_discrete(name = "work attitude")
 
 ggsave(filename = paste0(as.character(args[7]),"_2",".png"))
 
@@ -170,7 +175,7 @@ dt%>%
   filter(month(datework)  == args[3])%>%
   ggplot()+
   geom_tile(aes(x = datework, y = employee, fill = time_in))+
-  scale_fill_distiller(palette = "RdPu") +
+  scale_fill_distiller(name = "check in duration",palette = "RdPu") +
   scale_x_date(breaks = "1 week", date_labels = "%a-%e")+
   theme(axis.text.x = element_text(angle = 0),
         panel.background = element_rect(fill = "white"))
@@ -184,17 +189,17 @@ dt%>%
   filter(month(datework)  == args[3])%>%
   ggplot()+
   geom_tile(aes(x = datework, y = employee, fill = time_out))+
-  scale_fill_distiller(palette = "RdPu") + #RdPu
-  scale_x_date(breaks = "3 days", date_labels = "%a-%e")+
+  scale_fill_distiller(name = "check out duration",palette = "RdPu") + #RdPu
+  scale_x_date(breaks = "4 days", date_labels = "%a-%e")+
   theme(
-    panel.background = element_rect(fill = "white"))
+    panel.background = element_rect(fill = "white"))+
 ggsave(filename = paste0(as.character(args[7]),"_4",".png"))
 
 dt%>%
   filter(month(datework)  == args[3])%>%
   ggplot()+
   geom_tile(aes(x = datework, y = employee, fill = worktime2))+
-  scale_fill_distiller(palette = "Oranges") + #RdPu
+  scale_fill_distiller(name = "total work hours",palette = "Oranges") + #RdPu
   scale_x_date(breaks = "7 days", date_labels = "%a-%e")+
   theme(
     panel.background = element_rect(fill = "white"))
