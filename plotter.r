@@ -1,4 +1,4 @@
-#Rscript --vanilla  samprojv4.R 2020-04-01 "Heckman, Emily","el-Mona, Shaheera" 4 "09:00:00" "17:00:00" "checkin_co" "output"
+#Rscript --vanilla  plotter.r 2020-04-01 "Heckman, Emily","el-Mona, Shaheera" 4 "09:00:00" "17:00:00" "checkin_co" "output"
 
 args = commandArgs(trailingOnly = TRUE)
 cat(args[1], sep ='\n')

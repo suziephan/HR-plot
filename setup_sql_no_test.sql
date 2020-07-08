@@ -19,6 +19,3 @@ create table shiftinfo(userid int NOT NULL,
                    expected_login time without time zone,
                    expected_logout time without time zone);
 
-
-\copy shiftinfo from 'shiftinfo.csv' with DELIMITER ',' CSV HEADER
-\copy timeinfo  from 'samprojv2.csv'  with DELIMITER ',' CSV HEADER
