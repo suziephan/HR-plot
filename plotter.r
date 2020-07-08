@@ -20,7 +20,7 @@ library(RColorBrewer)
 #library(grid)
 #library(cowplot)
 #library(magick)
-library(naniar)
+#library(naniar)
 
 
 # Connect to the default postgres database
